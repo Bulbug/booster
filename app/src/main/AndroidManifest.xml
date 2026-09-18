@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Real, currently-used permissions only. Nothing is requested speculatively.
+         Battery/thermal/CPU/RAM readouts in Phase 1+2 all use APIs (BatteryManager,
+         ActivityManager.MemoryInfo, PowerManager, Display) that need no runtime permission,
+         so none is declared for them. -->
+
+    <!-- Needed to query the list of launchable apps for the Game Library (Android 11+ package visibility). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".GameBoostApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GameBoostX">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.GameBoostX">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          Shizuku's manifest <provider> is added in Phase 3 when ShizukuManager lands.
+          Not declared yet: Phase 1+2 never touches Shizuku, so the app must not claim it does.
+        -->
+
+    </application>
+
+</manifest>

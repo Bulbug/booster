@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Game profiles and session history are local-only by design (see spec §27/§37 privacy).
+         Nothing is explicitly included, so nothing beyond Android's own minimal app state backs up. -->
+</full-backup-content>
