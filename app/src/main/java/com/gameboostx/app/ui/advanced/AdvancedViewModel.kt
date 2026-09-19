@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gameboostx.app.data.CapabilityManager
 import com.gameboostx.app.data.LogRepository
+import com.gameboostx.app.data.OemGameModeInfo
+import com.gameboostx.app.data.OemGameModeManager
 import com.gameboostx.app.data.db.SessionRecordEntity
 import com.gameboostx.app.data.db.SessionDao
 import com.gameboostx.app.shizuku.ShizukuManager
@@ -19,6 +21,7 @@ data class AdvancedUiState(
     val log: List<String> = emptyList(),
     val capabilities: Map<String, Boolean> = emptyMap(),
     val recentSessions: List<SessionRecordEntity> = emptyList(),
+    val oemGameMode: OemGameModeInfo? = null,
 )
 
 class AdvancedViewModel(
@@ -26,9 +29,12 @@ class AdvancedViewModel(
     private val capabilityManager: CapabilityManager,
     private val logRepository: LogRepository,
     private val sessionDao: SessionDao,
+    private val oemGameModeManager: OemGameModeManager,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AdvancedUiState(capabilities = capabilityManager.summary()))
+    private val _uiState = MutableStateFlow(
+        AdvancedUiState(capabilities = capabilityManager.summary(), oemGameMode = oemGameModeManager.detect())
+    )
     val uiState: StateFlow<AdvancedUiState> = _uiState.asStateFlow()
 
     init {
@@ -45,4 +51,6 @@ class AdvancedViewModel(
     }
 
     fun requestPermission() = shizukuManager.requestPermission()
+
+    fun oemLaunchIntent(packageName: String) = oemGameModeManager.launchIntent(packageName)
 }

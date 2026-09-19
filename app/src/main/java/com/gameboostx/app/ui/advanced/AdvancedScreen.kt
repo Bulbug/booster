@@ -50,6 +50,26 @@ fun AdvancedScreen(viewModel: AdvancedViewModel, modifier: Modifier = Modifier) 
             )
         }
 
+        // Only shown when a real vendor app was actually detected — never a guessed or assumed mode (spec §11/§26).
+        state.oemGameMode?.let { oem ->
+            item { SectionHeader("VENDOR GAME MODE") }
+            item {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                Column {
+                    Text("${oem.vendorLabel} — ${oem.appLabel}", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Detected on this device. GameBoost X can't control its settings directly — there's no public API for " +
+                            "vendor game-mode apps, and they change across ROM versions — but it can open the vendor's own app.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = {
+                        viewModel.oemLaunchIntent(oem.packageName)?.let { context.startActivity(it) }
+                    }) { Text("Open ${oem.appLabel}") }
+                }
+            }
+        }
+
         item { SectionHeader("DEVICE CAPABILITIES") }
         items(state.capabilities.entries.toList()) { (label, supported) ->
             Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {

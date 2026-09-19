@@ -32,11 +32,21 @@ device doesn't expose it.
 
 ## What's intentionally NOT here yet
 
-- A few of the more exotic per-manufacturer Game Mode variants. The first-launch setup
-  wizard (spec §4) is now implemented — see below. Everything else from the 60-section
-  spec is in.
+- Nothing — this round adds the OEM Game Mode detection that was the last open item, so
+  the full 60-section spec is implemented.
 
-## Setup wizard (added this round)
+## OEM Game Mode detection (added this round)
+
+- `OemGameModeManager` checks for known vendor game-mode apps (Samsung Game Booster/Game
+  Launcher, MIUI Game Turbo, ColorOS/OnePlus/Realme Game Space, Vivo/iQOO Game Mode, ASUS
+  ROG Game Genie) by package name.
+- There's no public, documented API to control any of these — their internals change
+  across ROM versions — so per spec §11 this only **detects and links to the vendor's own
+  app**, never tries to toggle their settings itself. The Advanced tab shows a "Vendor
+  Game Mode" card only when one is actually found on the device (nothing shown otherwise
+  — spec §28's "hide unsupported operations").
+
+## Setup wizard
 
 - Six real screens on first launch, gated by `OnboardingStore` (DataStore boolean —
   `MainActivity` shows the wizard until it's marked complete, then the normal nav host):

@@ -32,7 +32,7 @@ class GameBoostViewModelFactory(
                 BoostViewModel(packageName, app.deviceInfoManager, app.boostEngine, app.gameProfileStore, app.shizukuManager) as T
             }
             AdvancedViewModel::class.java ->
-                AdvancedViewModel(app.shizukuManager, app.capabilityManager, app.logRepository, app.database.sessionDao()) as T
+                AdvancedViewModel(app.shizukuManager, app.capabilityManager, app.logRepository, app.database.sessionDao(), app.oemGameModeManager) as T
             SessionViewModel::class.java ->
                 SessionViewModel(app.gamingSessionManager, app.overlayController) as T
             SettingsViewModel::class.java ->
