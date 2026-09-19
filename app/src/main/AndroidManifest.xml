@@ -2,9 +2,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Real, currently-used permissions only. Nothing is requested speculatively.
-         Battery/thermal/CPU/RAM readouts in Phase 1+2 all use APIs (BatteryManager,
-         ActivityManager.MemoryInfo, PowerManager, Display) that need no runtime permission,
-         so none is declared for them. -->
+         Battery/thermal/CPU/RAM readouts all use APIs (BatteryManager, ActivityManager.MemoryInfo,
+         PowerManager, Display) that need no runtime permission, so none is declared for them. -->
+
+    <!-- Gaming Session: detecting when the tracked game leaves the foreground (spec §50) uses
+         UsageStatsManager, which needs the special "Usage Access" app-op — granted via Settings,
+         not a normal runtime permission dialog. Declaring the permission is optional for the
+         app-op check itself but keeps intent explicit. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions"
+        xmlns:tools="http://schemas.android.com/tools" />
+
+    <!-- Optional overlay (spec §23/§17) — special permission granted via Settings, off by default. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Foreground service that keeps a gaming session's monitoring/overlay alive while backgrounded. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Network Diagnostics (spec §26-27) genuinely needs real network access; used nowhere else. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- Needed to query the list of launchable apps for the Game Library (Android 11+ package visibility). -->
     <queries>
@@ -36,9 +57,30 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".session.GamingSessionService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors device temperature/RAM/battery and shows an optional overlay while a tracked game is running, so the session view stays live if the app is backgrounded." />
+        </service>
+
+        <!-- Lets Export share a session-history file with other apps (Mail, Drive, etc.) without exposing raw file:// paths (spec §52). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!--
-          Shizuku's manifest <provider> is added in Phase 3 when ShizukuManager lands.
-          Not declared yet: Phase 1+2 never touches Shizuku, so the app must not claim it does.
+          Shizuku's own ContentProvider (rikka.shizuku.ShizukuProvider) is merged in automatically
+          by the dev.rikka.shizuku:provider dependency's own manifest — nothing to declare here.
+          ShizukuManager talks to it purely through the Shizuku API at runtime.
         -->
 
     </application>

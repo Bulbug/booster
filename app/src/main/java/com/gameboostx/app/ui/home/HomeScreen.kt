@@ -76,11 +76,30 @@ fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
 
         item {
             SectionHeader("SHIZUKU")
+            val shizuku = state.shizuku
+            val (label, color) = when {
+                shizuku.serviceBound -> "CONNECTED ✓" to MaterialTheme.colorScheme.primary
+                !shizuku.binderAvailable -> "NOT INSTALLED / NOT RUNNING" to MaterialTheme.colorScheme.onSurfaceVariant
+                !shizuku.permissionGranted -> "PERMISSION NEEDED" to MaterialTheme.colorScheme.onSurfaceVariant
+                else -> "CONNECTING…" to MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = color)
             Text(
-                text = if (state.shizukuConnected) "CONNECTED ✓" else "NOT CONNECTED — basic monitoring still works. Advanced controls arrive in a later build.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (state.shizukuConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                text = when {
+                    shizuku.serviceBound -> "Advanced optimizations (refresh rate lock, Game Mode) are available."
+                    !shizuku.binderAvailable -> "Install and start Shizuku to unlock advanced optimizations. Basic monitoring works fine without it."
+                    !shizuku.permissionGranted -> "Shizuku is running — grant this app permission to enable advanced optimizations."
+                    else -> "Connecting to the privileged service…"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (shizuku.binderAvailable && !shizuku.permissionGranted) {
+                androidx.compose.material3.TextButton(
+                    onClick = { viewModel.requestShizukuPermission() },
+                    modifier = Modifier.padding(top = 4.dp),
+                ) { Text("Grant Shizuku Permission") }
+            }
         }
 
         item {

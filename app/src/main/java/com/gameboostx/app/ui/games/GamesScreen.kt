@@ -54,6 +54,7 @@ fun GamesScreen(
     viewModel: GamesViewModel,
     onBoostClick: (String) -> Unit,
     onLaunchClick: (String) -> Unit,
+    onSessionClick: (GameInfo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -96,6 +97,7 @@ fun GamesScreen(
                         onProfileChange = { viewModel.setProfile(game.packageName, it) },
                         onBoostClick = { onBoostClick(game.packageName) },
                         onLaunchClick = { onLaunchClick(game.packageName) },
+                        onSessionClick = { onSessionClick(game) },
                     )
                 }
             }
@@ -119,6 +121,7 @@ private fun GameCard(
     onProfileChange: (ProfileType) -> Unit,
     onBoostClick: () -> Unit,
     onLaunchClick: () -> Unit,
+    onSessionClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -154,6 +157,9 @@ private fun GameCard(
             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onBoostClick, modifier = Modifier.weight(1f)) { Text("BOOST") }
                 OutlinedButton(onClick = onLaunchClick, modifier = Modifier.weight(1f)) { Text("LAUNCH") }
+            }
+            OutlinedButton(onClick = onSessionClick, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text("START GAMING SESSION")
             }
         }
     }

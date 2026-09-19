@@ -3,6 +3,7 @@ package com.gameboostx.app.ui.boost
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,14 +14,18 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gameboostx.app.shizuku.GameMode
 import com.gameboostx.app.ui.components.BoostCheckRow
+import com.gameboostx.app.ui.components.ShizukuConfirmDialog
 import com.gameboostx.app.ui.theme.SurfaceElevated
 
 @Composable
@@ -30,6 +35,21 @@ fun BoostScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    state.pendingAction?.let { action ->
+        ShizukuConfirmDialog(
+            action = action,
+            onConfirm = { viewModel.confirmPendingAction() },
+            onCancel = { viewModel.cancelPendingAction() },
+        )
+    }
+
+    state.lastActionMessage?.let { message ->
+        LaunchedEffect(message) {
+            kotlinx.coroutines.delay(4000)
+            viewModel.dismissLastActionMessage()
+        }
+    }
 
     if (state.running || state.result == null) {
         Column(
@@ -65,6 +85,52 @@ fun BoostScreen(
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(result.summary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+                }
+            }
+        }
+
+        state.lastActionMessage?.let { message ->
+            item {
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        }
+
+        if (state.shizukuConnected) {
+            item {
+                Text("ADVANCED (SHIZUKU)", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 20.dp, bottom = 8.dp))
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                item {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { viewModel.requestApplyMaxRefreshRate() },
+                            modifier = Modifier.weight(1f),
+                            enabled = state.maxRefreshHz != null,
+                        ) { Text("Lock Max Refresh") }
+                        OutlinedButton(
+                            onClick = { viewModel.requestRestoreRefreshRate() },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Restore Refresh") }
+                    }
+                }
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                item {
+                    Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { viewModel.requestSetGameMode(GameMode.PERFORMANCE) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Game Mode: Performance") }
+                        OutlinedButton(
+                            onClick = { viewModel.requestSetGameMode(GameMode.STANDARD) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Game Mode: Standard") }
+                    }
                 }
             }
         }
