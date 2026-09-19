@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gameboostx.app.data.GameLibraryManager
 import com.gameboostx.app.data.datastore.GameProfileStore
+import com.gameboostx.app.data.datastore.SettingsStore
 import com.gameboostx.app.data.model.GameInfo
 import com.gameboostx.app.data.model.ProfileType
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ data class GamesUiState(
 class GamesViewModel(
     private val gameLibraryManager: GameLibraryManager,
     private val gameProfileStore: GameProfileStore,
+    private val settingsStore: SettingsStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GamesUiState())
@@ -41,8 +43,11 @@ class GamesViewModel(
             _uiState.value = _uiState.value.copy(loading = true, scanError = null)
             try {
                 val found = withContext(Dispatchers.Default) { gameLibraryManager.scanInstalledGames() }
+                // Screen 6 of the setup wizard lets the person pick this default once, up front,
+                // rather than every newly-detected game silently landing on a hardcoded Balanced.
+                val defaultProfile = settingsStore.settings.first().defaultProfile
                 val withProfiles = found.map { game ->
-                    val profile = gameProfileStore.profileFor(game.packageName).first()
+                    val profile = gameProfileStore.profileFor(game.packageName, fallback = defaultProfile).first()
                     val lastBoost = gameProfileStore.lastBoostAtFor(game.packageName).first()
                     game.copy(profile = profile, lastOptimizedAtMillis = lastBoost)
                 }

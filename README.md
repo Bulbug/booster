@@ -32,8 +32,24 @@ device doesn't expose it.
 
 ## What's intentionally NOT here yet
 
-- A first-launch setup wizard (spec §4) and a few of the more exotic per-manufacturer
-  Game Mode variants — everything else from the 60-section spec is implemented.
+- A few of the more exotic per-manufacturer Game Mode variants. The first-launch setup
+  wizard (spec §4) is now implemented — see below. Everything else from the 60-section
+  spec is in.
+
+## Setup wizard (added this round)
+
+- Six real screens on first launch, gated by `OnboardingStore` (DataStore boolean —
+  `MainActivity` shows the wizard until it's marked complete, then the normal nav host):
+  1. Welcome
+  2. What GameBoost X can and can't do
+  3. Optional permissions explained (not requested — spec §4 is explicit that permissions
+     are asked for only when a feature actually needs them, not up front)
+  4. Shizuku detection (read-only status check, no permission prompt here either)
+  5. A real device compatibility scan (`DeviceInfoManager.snapshot()` +
+     `CapabilityManager.summary()` — the exact same data Home/Advanced show, not a mockup)
+  6. Default gaming profile picker (Safe/Balanced/Performance) — this is now genuinely
+     used: `GameProfileStore` and `GamesViewModel` were updated so newly-detected games
+     fall back to this choice instead of a hardcoded Balanced.
 
 ## Phase 3 — Shizuku engine
 

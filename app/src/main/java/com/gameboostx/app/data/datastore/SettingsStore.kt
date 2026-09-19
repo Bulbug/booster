@@ -3,7 +3,9 @@ package com.gameboostx.app.data.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.gameboostx.app.data.model.ProfileType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -14,6 +16,7 @@ data class AppSettings(
     val showThermalWarnings: Boolean = true,
     val restoreSettingsAutomatically: Boolean = true,
     val logGamingSessions: Boolean = true,
+    val defaultProfile: ProfileType = ProfileType.BALANCED,
 )
 
 /** General behavior toggles (spec §36) — none of these unlock anything the app wouldn't otherwise ask permission for; they just change defaults. */
@@ -24,6 +27,7 @@ class SettingsStore(private val context: Context) {
         val THERMAL_WARNINGS = booleanPreferencesKey("show_thermal_warnings")
         val AUTO_RESTORE = booleanPreferencesKey("restore_settings_automatically")
         val LOG_SESSIONS = booleanPreferencesKey("log_gaming_sessions")
+        val DEFAULT_PROFILE = stringPreferencesKey("default_profile")
     }
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { prefs ->
@@ -32,6 +36,9 @@ class SettingsStore(private val context: Context) {
             showThermalWarnings = prefs[Keys.THERMAL_WARNINGS] ?: true,
             restoreSettingsAutomatically = prefs[Keys.AUTO_RESTORE] ?: true,
             logGamingSessions = prefs[Keys.LOG_SESSIONS] ?: true,
+            defaultProfile = prefs[Keys.DEFAULT_PROFILE]?.let { stored ->
+                ProfileType.entries.find { it.name == stored }
+            } ?: ProfileType.BALANCED,
         )
     }
 
@@ -39,4 +46,5 @@ class SettingsStore(private val context: Context) {
     suspend fun setThermalWarnings(value: Boolean) = context.settingsDataStore.edit { it[Keys.THERMAL_WARNINGS] = value }
     suspend fun setAutoRestore(value: Boolean) = context.settingsDataStore.edit { it[Keys.AUTO_RESTORE] = value }
     suspend fun setLogSessions(value: Boolean) = context.settingsDataStore.edit { it[Keys.LOG_SESSIONS] = value }
+    suspend fun setDefaultProfile(profile: ProfileType) = context.settingsDataStore.edit { it[Keys.DEFAULT_PROFILE] = profile.name }
 }

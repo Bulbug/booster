@@ -10,6 +10,7 @@ import com.gameboostx.app.data.LogRepository
 import com.gameboostx.app.data.NetworkDiagnosticsManager
 import com.gameboostx.app.data.SessionExporter
 import com.gameboostx.app.data.datastore.GameProfileStore
+import com.gameboostx.app.data.datastore.OnboardingStore
 import com.gameboostx.app.data.datastore.SettingsStore
 import com.gameboostx.app.data.db.GameBoostDatabase
 import com.gameboostx.app.overlay.OverlayController
@@ -58,6 +59,8 @@ class GameBoostApplication : Application() {
         private set
     lateinit var sessionExporter: SessionExporter
         private set
+    lateinit var onboardingStore: OnboardingStore
+        private set
 
     /** Set right before navigating to the Session screen — a simple way to pass a full GameInfo
      * without threading it through nav args as a string. Read once by SessionScreen. */
@@ -85,6 +88,7 @@ class GameBoostApplication : Application() {
         networkDiagnosticsManager = NetworkDiagnosticsManager(this)
         benchmarkManager = BenchmarkManager(this, deviceInfoManager)
         sessionExporter = SessionExporter(this)
+        onboardingStore = OnboardingStore(this)
 
         // Keep GamingSessionService's lifecycle in lockstep with the session itself — never
         // running longer than the thing it's reporting on (spec §40).

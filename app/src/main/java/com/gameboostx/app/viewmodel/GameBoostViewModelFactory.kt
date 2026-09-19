@@ -7,6 +7,7 @@ import com.gameboostx.app.ui.advanced.AdvancedViewModel
 import com.gameboostx.app.ui.boost.BoostViewModel
 import com.gameboostx.app.ui.games.GamesViewModel
 import com.gameboostx.app.ui.home.HomeViewModel
+import com.gameboostx.app.ui.onboarding.OnboardingViewModel
 import com.gameboostx.app.ui.session.SessionViewModel
 import com.gameboostx.app.ui.settings.SettingsViewModel
 
@@ -25,7 +26,7 @@ class GameBoostViewModelFactory(
             HomeViewModel::class.java ->
                 HomeViewModel(app.deviceInfoManager, app.capabilityManager, app.shizukuManager) as T
             GamesViewModel::class.java ->
-                GamesViewModel(app.gameLibraryManager, app.gameProfileStore) as T
+                GamesViewModel(app.gameLibraryManager, app.gameProfileStore, app.settingsStore) as T
             BoostViewModel::class.java -> {
                 requireNotNull(packageName) { "BoostViewModel requires a packageName" }
                 BoostViewModel(packageName, app.deviceInfoManager, app.boostEngine, app.gameProfileStore, app.shizukuManager) as T
@@ -42,6 +43,14 @@ class GameBoostViewModelFactory(
                     app.benchmarkManager,
                     app.sessionExporter,
                     app.database.sessionDao(),
+                ) as T
+            OnboardingViewModel::class.java ->
+                OnboardingViewModel(
+                    app.capabilityManager,
+                    app.deviceInfoManager,
+                    app.shizukuManager,
+                    app.settingsStore,
+                    app.onboardingStore,
                 ) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

@@ -20,11 +20,11 @@ class GameProfileStore(private val context: Context) {
     private fun profileKey(packageName: String) = stringPreferencesKey("profile_$packageName")
     private fun lastBoostKey(packageName: String) = longPreferencesKey("last_boost_$packageName")
 
-    fun profileFor(packageName: String): Flow<ProfileType> =
+    fun profileFor(packageName: String, fallback: ProfileType = ProfileType.BALANCED): Flow<ProfileType> =
         context.gameProfileDataStore.data.map { prefs ->
             prefs[profileKey(packageName)]?.let { stored ->
                 ProfileType.entries.find { it.name == stored }
-            } ?: ProfileType.BALANCED
+            } ?: fallback
         }
 
     fun lastBoostAtFor(packageName: String): Flow<Long?> =
