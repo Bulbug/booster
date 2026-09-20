@@ -4,12 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gameboostx.app.ui.navigation.GameBoostNavHost
 import com.gameboostx.app.ui.onboarding.OnboardingScreen
@@ -41,7 +45,10 @@ private fun AppRoot(app: GameBoostApplication) {
         null -> Unit // brief gap before the first DataStore read completes — nothing to show yet
         false -> {
             val vm: OnboardingViewModel = viewModel(factory = GameBoostViewModelFactory(app))
-            OnboardingScreen(viewModel = vm, onFinished = {})
+            // Same tablet/large-screen width cap as the main nav host, for consistency.
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                OnboardingScreen(viewModel = vm, onFinished = {}, modifier = Modifier.widthIn(max = 640.dp).fillMaxSize())
+            }
         }
         true -> GameBoostNavHost(app = app)
     }

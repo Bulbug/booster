@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,16 +47,19 @@ fun SessionScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var overlayOn by remember { mutableStateOf(false) }
+    val overlayPermGranted = com.gameboostx.app.ui.components.rememberResumePermissionState { OverlayPermissionHelper.isGranted(context) }
+    val usageAccessGranted = com.gameboostx.app.ui.components.rememberResumePermissionState { UsageAccessHelper.isGranted(context) }
 
     val notifPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
-    // Start once when this screen first appears for this game.
-    remember(packageName) {
+    // Start once when this screen first appears for this game. LaunchedEffect (not remember) is
+    // the correct place for this side effect — remember's calculation block isn't guaranteed to
+    // run exactly once under all recomposition conditions, LaunchedEffect is.
+    LaunchedEffect(packageName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         viewModel.start(packageName, displayName, profile)
-        true
     }
 
     if (state.exitDetected) {
@@ -135,7 +139,7 @@ fun SessionScreen(
 
         item { SectionHeader("OVERLAY") }
         item {
-            if (!OverlayPermissionHelper.isGranted(context)) {
+            if (!overlayPermGranted) {
                 Column {
                     Text("Overlay permission not granted.", style = MaterialTheme.typography.bodyMedium)
                     TextButton(onClick = { context.startActivity(OverlayPermissionHelper.settingsIntent(context)) }) {
@@ -152,7 +156,7 @@ fun SessionScreen(
             }
         }
 
-        if (!UsageAccessHelper.isGranted(context)) {
+        if (!usageAccessGranted) {
             item { SectionHeader("EXIT DETECTION") }
             item {
                 Column {

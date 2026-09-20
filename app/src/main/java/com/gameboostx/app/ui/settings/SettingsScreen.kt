@@ -33,6 +33,8 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val overlayGranted = com.gameboostx.app.ui.components.rememberResumePermissionState { viewModel.overlayGranted(context) }
+    val usageAccessGranted = com.gameboostx.app.ui.components.rememberResumePermissionState { viewModel.usageAccessGranted(context) }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -49,8 +51,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
                 name = "Shizuku",
                 status = when {
                     shizuku.serviceBound -> "Granted"
-                    shizuku.binderAvailable -> "Not granted"
-                    else -> "Not installed / not running"
+                    shizuku.binderAvailable && !shizuku.permissionGranted -> "Not granted"
+                    !shizuku.appInstalled -> "Not installed"
+                    else -> "Installed, service not running"
                 },
                 explanation = "Enables refresh-rate lock and Game Mode changes. Optional — the app works without it.",
                 actionLabel = if (shizuku.binderAvailable && !shizuku.permissionGranted) "Grant" else null,
@@ -60,24 +63,26 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
         item {
             PermissionRow(
                 name = "Overlay (draw over other apps)",
-                status = if (viewModel.overlayGranted(context)) "Granted" else "Not granted",
+                status = if (overlayGranted) "Granted" else "Not granted",
                 explanation = "Lets a gaming session show a small stats overlay. Optional.",
-                actionLabel = if (!viewModel.overlayGranted(context)) "Open Settings" else null,
+                actionLabel = if (!overlayGranted) "Open Settings" else null,
                 onAction = { context.startActivity(com.gameboostx.app.data.OverlayPermissionHelper.settingsIntent(context)) },
             )
         }
         item {
             PermissionRow(
                 name = "Usage Access",
-                status = if (viewModel.usageAccessGranted(context)) "Granted" else "Not granted",
+                status = if (usageAccessGranted) "Granted" else "Not granted",
                 explanation = "Lets a gaming session notice when you've exited the game. Optional — you can always end a session manually.",
-                actionLabel = if (!viewModel.usageAccessGranted(context)) "Open Settings" else null,
+                actionLabel = if (!usageAccessGranted) "Open Settings" else null,
                 onAction = { context.startActivity(com.gameboostx.app.data.UsageAccessHelper.settingsIntent()) },
             )
         }
         item {
-            val notifGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            val notifGranted = com.gameboostx.app.ui.components.rememberResumePermissionState {
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            }
             PermissionRow(
                 name = "Notifications",
                 status = if (notifGranted) "Granted" else "Not granted",

@@ -18,7 +18,8 @@ import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 
 data class ShizukuState(
-    val binderAvailable: Boolean = false, // Shizuku app is installed and its service is running
+    val appInstalled: Boolean = false,    // the Shizuku app itself is present on the device
+    val binderAvailable: Boolean = false, // its service is actually running (installed alone isn't enough)
     val permissionGranted: Boolean = false,
     val serviceBound: Boolean = false,    // our PrivilegedService is actually connected
 )
@@ -78,6 +79,9 @@ class ShizukuManager(
     fun start() {
         if (started) return
         started = true
+        val appInstalled = isShizukuAppInstalled()
+        _state.value = _state.value.copy(appInstalled = appInstalled)
+        appendLog("Shizuku app installed: $appInstalled")
         Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
         Shizuku.addBinderDeadListener(binderDeadListener)
         Shizuku.addRequestPermissionResultListener(permissionResultListener)
@@ -95,14 +99,34 @@ class ShizukuManager(
     }
 
     private fun refreshBinderState() {
-        val available = try { Shizuku.pingBinder() } catch (_: Exception) { false }
-        val granted = available && try {
-            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-        } catch (_: Exception) {
+        val available = try { Shizuku.pingBinder() } catch (e: Exception) {
+            appendLog("Shizuku.pingBinder() threw: ${e.message}")
             false
         }
-        _state.value = _state.value.copy(binderAvailable = available, permissionGranted = granted)
+        val granted = available && try {
+            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            appendLog("Shizuku.checkSelfPermission() threw: ${e.message}")
+            false
+        }
+        if (available != _state.value.binderAvailable) {
+            appendLog(if (available) "Shizuku binder became available." else "Shizuku binder unavailable.")
+        }
+        _state.value = _state.value.copy(
+            appInstalled = _state.value.appInstalled || isShizukuAppInstalled(),
+            binderAvailable = available,
+            permissionGranted = granted,
+        )
         if (available && granted) bindPrivilegedService()
+    }
+
+    private fun isShizukuAppInstalled(): Boolean = try {
+        context.packageManager.getApplicationInfo(SHIZUKU_PACKAGE, 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
+    } catch (_: Exception) {
+        false // package-visibility or other lookup failure — treat as "can't confirm", not a hard false claim in the UI copy
     }
 
     /** Triggers Android's Shizuku permission prompt. Result arrives via permissionResultListener. */
@@ -190,5 +214,6 @@ class ShizukuManager(
 
     companion object {
         private const val SHIZUKU_REQUEST_CODE = 9001
+        private const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
     }
 }

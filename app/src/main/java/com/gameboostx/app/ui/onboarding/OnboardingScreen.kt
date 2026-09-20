@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,7 +28,7 @@ import com.gameboostx.app.ui.components.SectionHeader
 fun OnboardingScreen(viewModel: OnboardingViewModel, onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier.fillMaxSize()) {
+    Column(modifier.fillMaxSize().safeDrawingPadding()) {
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             contentPadding = PaddingValues(24.dp),

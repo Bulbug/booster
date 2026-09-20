@@ -33,6 +33,9 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- Lets ShizukuManager tell "not installed" apart from "installed but not running" for
+             clearer status/guidance (previously both looked identical — pingBinder() false either way). -->
+        <package android:name="moe.shizuku.privileged.api" />
     </queries>
 
     <application

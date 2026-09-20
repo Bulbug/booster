@@ -1,7 +1,10 @@
 package com.gameboostx.app.ui.navigation
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
@@ -14,7 +17,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -87,11 +92,17 @@ fun GameBoostNavHost(app: GameBoostApplication) {
             }
         }
     ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = Destination.Home.route,
-            modifier = Modifier.padding(padding),
+        // Caps content width on tablets/large screens instead of letting single-column layouts
+        // stretch edge to edge — a no-op on ordinary phone widths (well under the 640dp cap).
+        Box(
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
         ) {
+            NavHost(
+                navController = navController,
+                startDestination = Destination.Home.route,
+                modifier = Modifier.widthIn(max = 640.dp).fillMaxSize(),
+            ) {
             composable(Destination.Home.route) {
                 val vm: HomeViewModel = viewModel(factory = factory)
                 HomeScreen(vm)
@@ -144,6 +155,7 @@ fun GameBoostNavHost(app: GameBoostApplication) {
                         onEnded = { navController.popBackStack() },
                     )
                 }
+            }
             }
         }
     }

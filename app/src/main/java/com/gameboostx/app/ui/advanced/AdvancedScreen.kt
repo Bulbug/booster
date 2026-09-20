@@ -33,6 +33,7 @@ fun AdvancedScreen(viewModel: AdvancedViewModel, modifier: Modifier = Modifier) 
 
         item {
             SectionHeader("SHIZUKU STATUS")
+            Text("App installed: ${if (shizuku.appInstalled) "yes" else "no"}", style = MaterialTheme.typography.bodyMedium)
             Text("Binder available: ${if (shizuku.binderAvailable) "yes" else "no"}", style = MaterialTheme.typography.bodyMedium)
             Text("Permission granted: ${if (shizuku.permissionGranted) "yes" else "no"}", style = MaterialTheme.typography.bodyMedium)
             Text("Privileged service connected: ${if (shizuku.serviceBound) "yes" else "no"}", style = MaterialTheme.typography.bodyMedium)

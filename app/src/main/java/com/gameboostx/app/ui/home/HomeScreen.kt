@@ -79,7 +79,8 @@ fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
             val shizuku = state.shizuku
             val (label, color) = when {
                 shizuku.serviceBound -> "CONNECTED ✓" to MaterialTheme.colorScheme.primary
-                !shizuku.binderAvailable -> "NOT INSTALLED / NOT RUNNING" to MaterialTheme.colorScheme.onSurfaceVariant
+                !shizuku.appInstalled -> "NOT INSTALLED" to MaterialTheme.colorScheme.onSurfaceVariant
+                !shizuku.binderAvailable -> "INSTALLED — SERVICE NOT RUNNING" to MaterialTheme.colorScheme.onSurfaceVariant
                 !shizuku.permissionGranted -> "PERMISSION NEEDED" to MaterialTheme.colorScheme.onSurfaceVariant
                 else -> "CONNECTING…" to MaterialTheme.colorScheme.onSurfaceVariant
             }
@@ -87,7 +88,8 @@ fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
             Text(
                 text = when {
                     shizuku.serviceBound -> "Advanced optimizations (refresh rate lock, Game Mode) are available."
-                    !shizuku.binderAvailable -> "Install and start Shizuku to unlock advanced optimizations. Basic monitoring works fine without it."
+                    !shizuku.appInstalled -> "Shizuku isn't installed on this device. Basic monitoring works fine without it — install it later from Settings if you want the extra controls."
+                    !shizuku.binderAvailable -> "Shizuku is installed but its service isn't running. Open the Shizuku app and start it (via ADB/wireless debugging, or root, depending on your setup), then come back here."
                     !shizuku.permissionGranted -> "Shizuku is running — grant this app permission to enable advanced optimizations."
                     else -> "Connecting to the privileged service…"
                 },

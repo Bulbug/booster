@@ -35,7 +35,31 @@ device doesn't expose it.
 - Nothing — this round adds the OEM Game Mode detection that was the last open item, so
   the full 60-section spec is implemented.
 
-## OEM Game Mode detection (added this round)
+## Bug-fix round (real-device feedback)
+
+- **Onboarding wizard rendered under the status bar** on edge-to-edge devices — it was the
+  one screen with no inset handling. Fixed with `.safeDrawingPadding()`.
+- **Stale permission status**: Overlay/Usage Access/Notifications status in
+  Settings→Permission Center and the Session screen were read once at composition time and
+  never refreshed after the person granted them in system Settings and came back. Added
+  `rememberResumePermissionState` (re-checks on `ON_RESUME`) and wired it in everywhere
+  these are shown.
+- **Compose anti-pattern**: SessionScreen started the session inside a
+  `remember(packageName) { sideEffect }` block instead of `LaunchedEffect` — `remember`'s
+  calculation isn't guaranteed to run exactly once under all recomposition conditions.
+  Fixed.
+- **Shizuku detection diagnostics**: added a `<queries>` entry so the app can now tell
+  "Shizuku not installed" apart from "installed but the service isn't running" (previously
+  both just showed `pingBinder() == false`), added exception logging around the Shizuku
+  API calls to the durable log (visible in Advanced), and surfaced the distinction in
+  Home/Settings/Advanced. If Shizuku still doesn't connect after this, the Advanced tab's
+  log plus the three status lines (app installed / binder available / permission granted)
+  show exactly which stage is failing.
+- **Tablet/large-screen width**: both the main nav host and the onboarding wizard are now
+  wrapped in a 640dp max-width, centered container — a no-op on ordinary phones, stops
+  content stretching awkwardly on tablets/foldables.
+
+## OEM Game Mode detection
 
 - `OemGameModeManager` checks for known vendor game-mode apps (Samsung Game Booster/Game
   Launcher, MIUI Game Turbo, ColorOS/OnePlus/Realme Game Space, Vivo/iQOO Game Mode, ASUS
